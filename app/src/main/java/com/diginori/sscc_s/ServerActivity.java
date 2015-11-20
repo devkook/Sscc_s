@@ -2,6 +2,7 @@ package com.diginori.sscc_s;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -9,8 +10,12 @@ import android.widget.TextView;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
+import java.util.Enumeration;
 
 public class ServerActivity extends Activity {
 
@@ -20,6 +25,7 @@ public class ServerActivity extends Activity {
     DataInputStream is;
     DataOutputStream os;
 
+    TextView text_myip;
     TextView text_msg; //클라이언트로부터 받을 메세지를 표시하는 TextView
     EditText edit_msg; //클라이언트로 전송할 메세지를 작성하는 EditText
 
@@ -32,12 +38,34 @@ public class ServerActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_server);
 
+        text_myip = (TextView)findViewById(R.id.tvMyIP);
         text_msg= (TextView)findViewById(R.id.text_massage_from_client);
         edit_msg= (EditText)findViewById(R.id.edit_message_to_client);
     }
 
+    private String getLocalIpAddress() {
+        try {
+            for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {
+                NetworkInterface intf = en.nextElement();
+                for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements();) {
+                    InetAddress inetAddress = enumIpAddr.nextElement();
+                    if (!inetAddress.isLoopbackAddress()) {
+                        return inetAddress.getHostAddress();
+                    }
+                }
+            }
+        } catch (SocketException ex) {
+            Log.e("E", ex.toString());
+        }
+        return null;
+    }
+
     //Button 클릭시 자동으로 호출되는 callback 메소드
     public void mOnClick(View v){
+
+        System.out.println(":::MY IP::::" + getLocalIpAddress());
+        text_myip.setText(getLocalIpAddress());
+
         switch(v.getId()){
             case R.id.btn_start_server: //채팅 서버 구축 및 클라이언트로 부터 메세지 받기
 
