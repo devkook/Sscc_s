@@ -85,6 +85,8 @@ public class DebugAcvivity extends Activity {
             tv.append("location:" + location.toString() + "\n");
             tv.append("TelephonyManager:" + tm.toString() + "\n");
 
+
+
             return true;
         }
 
