@@ -13,7 +13,6 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
     }
 
-    //Button을 클릭했을 때 호출되는 callback 메소드
     public void mOnClick(View v){
 
         Intent i;
@@ -24,6 +23,10 @@ public class MainActivity extends Activity {
                 break;
             case R.id.btn_client: //클라이언트 화면
                 i= new Intent(this, ClientActivity.class);
+                startActivity(i);
+                break;
+            case R.id.btn_debug: //클라이언트 화면
+                i= new Intent(this, DebugAcvivity.class);
                 startActivity(i);
                 break;
         }

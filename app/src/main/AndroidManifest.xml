@@ -24,12 +24,17 @@
 
         <activity
             android:name=".ServerActivity"
-            android:label="@string/app_name" >
+            android:label="SSCC:::Server" >
         </activity>
 
         <activity
             android:name=".ClientActivity"
-            android:label="@string/app_name" >
+            android:label="SSCC:::Client" >
+        </activity>
+
+        <activity
+            android:name=".DebugAcvivity"
+            android:label="SSCC:::Debug" >
         </activity>
 
     </application>
