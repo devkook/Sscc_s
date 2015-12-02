@@ -1,7 +1,10 @@
 package com.diginori.sscc_s;
 
 import android.app.Activity;
+import android.net.DhcpInfo;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.text.format.Formatter;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
@@ -10,6 +13,7 @@ import android.widget.TextView;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.ServerSocket;
@@ -43,33 +47,102 @@ public class ServerActivity extends Activity {
         edit_msg= (EditText)findViewById(R.id.edit_message_to_client);
     }
 
+    private  String getWifiIp(){
+        WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
+        return Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress());
+    }
+
+    private String getWifiGatewayIp(){
+        WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
+        DhcpInfo dhcpInfo = wm.getDhcpInfo() ;
+        int serverIP = dhcpInfo.gateway;
+
+        String ipAddress = String.format(
+                "%d.%d.%d.%d",
+                (serverIP & 0xff),
+                (serverIP >> 8 & 0xff),
+                (serverIP >> 16 & 0xff),
+                (serverIP >> 24 & 0xff));
+
+        return ipAddress;
+    }
+
     private String getLocalIpAddress() {
         try {
             for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {
                 NetworkInterface intf = en.nextElement();
                 for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements();) {
+                    String ips = "";
                     InetAddress inetAddress = enumIpAddr.nextElement();
                     if (!inetAddress.isLoopbackAddress()) {
-                        return inetAddress.getHostAddress();
+                        ips = ips + "," + inetAddress.getHostAddress();
+                    }else {
+                        ips = ips + "," + inetAddress.getHostAddress();
                     }
+
+                    System.out.println("getLocalIpAddress():" + ips);
+                    return ips;
                 }
             }
         } catch (SocketException ex) {
             Log.e("E", ex.toString());
         }
+        return "NULL";
+    }
+
+    public  String getIpAddress() {
+        try {
+            for (Enumeration en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {
+                NetworkInterface intf = (NetworkInterface) en.nextElement();
+                for (Enumeration enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements();) {
+                    InetAddress inetAddress = (InetAddress) enumIpAddr.nextElement();
+                    System.out.println("getIpAddress:"+inetAddress.getHostAddress().toString());
+                    if (!inetAddress.isLoopbackAddress()&&inetAddress instanceof Inet4Address) {
+                        String ipAddress=inetAddress.getHostAddress().toString();
+                        Log.e("IP address",""+ipAddress);
+                        return ipAddress;
+                    }
+                }
+            }
+        } catch (SocketException ex) {
+            Log.e("Socket exception in GetIP Address of Utilities", ex.toString());
+        }
         return null;
     }
 
+    private String GetLocalIpAddress() {
+        try {
+            for (Enumeration<NetworkInterface> en = NetworkInterface
+                    .getNetworkInterfaces(); en.hasMoreElements();) {
+                NetworkInterface intf = en.nextElement();
+                for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements();) {
+                    InetAddress inetAddress = enumIpAddr.nextElement();
+                    System.out.println("GetLocalIpAddress:"+inetAddress.getHostAddress().toString());
+                    if (!inetAddress.isLoopbackAddress()) {
+                        return inetAddress.getHostAddress().toString();
+                    }
+                }
+            }
+        } catch (SocketException ex) {
+            return "ERROR Obtaining IP";
+        }
+        return "No IP Available";
+    }
+
+
     //Button 클릭시 자동으로 호출되는 callback 메소드
     public void mOnClick(View v){
+        text_myip.setText(getWifiIp());
 
-        System.out.println(":::MY IP::::" + getLocalIpAddress());
-        text_myip.setText(getLocalIpAddress());
+        GetLocalIpAddress();
+        getIpAddress();
+        getLocalIpAddress();
 
         switch(v.getId()){
             case R.id.btn_start_server: //채팅 서버 구축 및 클라이언트로 부터 메세지 받기
 
-                //Android API14버전이상 부터 네트워크 작업은 무조건 별도의 Thread에서 실행 해야함.
+                //A
+                // ndroid API14버전이상 부터 네트워크 작업은 무조건 별도의 Thread에서 실행 해야함.
                 new Thread(new Runnable() {
 
                     @Override
